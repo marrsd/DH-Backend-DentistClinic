@@ -11,6 +11,6 @@ public interface CRUDService<T> {
     T create(T t) throws IntegrityDataException, DataAlreadyExistsException, NoSuchDataExistsException;
     List<T> getAll() throws ResourceNotFoundException;
     T getById(Long id) throws IntegrityDataException, NoSuchDataExistsException;
-    T update(T t) throws IntegrityDataException, NoSuchDataExistsException;
+    T update(T t) throws IntegrityDataException, NoSuchDataExistsException, DataAlreadyExistsException;
     void delete(Long id) throws IntegrityDataException, NoSuchDataExistsException;
 }

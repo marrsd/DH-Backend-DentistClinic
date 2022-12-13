@@ -30,6 +30,8 @@ public class AddressService implements CRUDService<AddressDTO> {
 
     @Override
     public AddressDTO create(AddressDTO addressDTO) throws IntegrityDataException {
+        if(addressDTO.getNumber() < 1 )
+            throw new IntegrityDataException("The address number must not be negative or 0");
 
         Address address = mapper.convertValue(addressDTO, Address.class);
 

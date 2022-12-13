@@ -16,7 +16,6 @@ class AddressServiceTest {
 
     @Autowired
     private AddressService addressService;
-
     private AddressDTO address;
 
     @BeforeEach

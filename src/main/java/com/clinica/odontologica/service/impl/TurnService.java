@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,34 +102,42 @@ public class TurnService implements CRUDService<TurnDTO> {
         return turnDTO;
     }
 
-    public TurnDTO getByDentistRegistrationNum(Long registrationNum) throws IntegrityDataException, NoSuchDataExistsException {
+    public List<TurnDTO> getByDentistRegistrationNum(Long registrationNum) throws IntegrityDataException, NoSuchDataExistsException {
         if(registrationNum == null)
             throw new IntegrityDataException("You need a dentis's registration number to get turns");
 
-        Turn turn = turnRepository.getByDentistRegistrationNumber(registrationNum)
-                .orElseThrow(() -> new NoSuchDataExistsException("There aren't turn for the dentist with registration number: " + registrationNum));
+        List<Turn> turns = turnRepository.getByDentistRegistrationNumber(registrationNum)
+                .orElseThrow(() -> new NoSuchDataExistsException("There aren't turn with the dentist with registration number: " + registrationNum));
 
-        TurnDTO turnsDto  = mapper.convertValue(turn, TurnDTO.class);
+        List<TurnDTO> turnDTOList = new ArrayList<>();
 
-        LOGGER.info("Method - GetByDentistRegistrationNumber: Turn with dentist with registration number: "+ registrationNum + ": " + turnsDto);
-        return turnsDto;
+        for (Turn turn : turns) {
+            turnDTOList.add(mapper.convertValue(turn, TurnDTO.class));
+        }
+
+        LOGGER.info("Method - GetByDentistRegistrationNumber: Turn with dentist with registration number: "+ registrationNum + ": " + turnDTOList);
+        return turnDTOList;
     }
 
-    public TurnDTO getByPatientDni(Long dni) throws IntegrityDataException, NoSuchDataExistsException {
+    public List<TurnDTO> getByPatientDni(Long dni) throws IntegrityDataException, NoSuchDataExistsException {
         if(dni == null)
             throw new IntegrityDataException("You need a patient's dni to get turns");
 
-        Turn turn = turnRepository.getByPatientDni(dni)
+        List<Turn> turns = turnRepository.getByPatientDni(dni)
                 .orElseThrow(() -> new NoSuchDataExistsException("There aren't turn for the patient with dni: " + dni));
 
-        TurnDTO turnsDto  = mapper.convertValue(turn, TurnDTO.class);
+        List<TurnDTO> turnDTOList = new ArrayList<>();
 
-        LOGGER.info("Method - GetByPatientDni: Turn with patient with dni: "+ dni + ": " + turnsDto);
-        return turnsDto;
+        for (Turn turn : turns) {
+            turnDTOList.add(mapper.convertValue(turn, TurnDTO.class));
+        }
+
+        LOGGER.info("Method - GetByPatientDni: Turn with patient with dni: "+ dni + ": " + turnDTOList);
+        return turnDTOList;
     }
 
     @Override
-    public TurnDTO update(TurnDTO turnDTO) throws IntegrityDataException, NoSuchDataExistsException {
+    public TurnDTO update(TurnDTO turnDTO) throws IntegrityDataException, NoSuchDataExistsException, DataAlreadyExistsException {
         if (turnDTO == null)
             throw new IntegrityDataException("The turn can´t be null");
 
@@ -150,7 +157,7 @@ public class TurnService implements CRUDService<TurnDTO> {
                 .orElseThrow(() ->new NoSuchDataExistsException("You can't update a turn doesn't exist. You must to register it first"));
 
         if (verifyFreeTurn(turnDTO))
-            throw new IntegrityDataException("The turn is already reserved, try another one.");
+            throw new DataAlreadyExistsException("The turn is already reserved, try another one.");
 
         updateValues(turnDB, turnDTO);
 

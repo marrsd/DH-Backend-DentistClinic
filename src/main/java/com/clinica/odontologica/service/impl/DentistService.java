@@ -31,7 +31,7 @@ public class DentistService implements CRUDService<DentistDTO> {
     @Override
     public DentistDTO create(DentistDTO dentistDTO) throws DataAlreadyExistsException {
         if(dentistDTO.getDni() < 1 || dentistDTO.getRegistrationNumber() < 1)
-            throw new IllegalArgumentException("The dni and the registration number for the dentist must not be negative");
+            throw new IllegalArgumentException("The dni and the registration number for the dentist must not be negative or 0");
 
         Dentist dentist = mapper.convertValue(dentistDTO, Dentist.class);
 
@@ -144,7 +144,7 @@ public class DentistService implements CRUDService<DentistDTO> {
         dentistRepository.deleteById(id);
     }
 
-    public void deleteNroMatricula(Long registrationNumber) throws IntegrityDataException, NoSuchDataExistsException {
+    public void deleteByRegistrationNumber(Long registrationNumber) throws IntegrityDataException, NoSuchDataExistsException {
         if(registrationNumber == null)
             throw new IntegrityDataException("Dentist registration number can't be null");
 

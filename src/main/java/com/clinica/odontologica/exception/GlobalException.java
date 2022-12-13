@@ -38,7 +38,7 @@ public class GlobalException {
     @ExceptionHandler({ DataAlreadyExistsException.class })
     public ResponseEntity<String> personAlreadyExixtsException(DataAlreadyExistsException e) {
         LOGGER.error(e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERROR: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("ERROR: " + e.getMessage());
     }
 
     @ExceptionHandler({ NoSuchDataExistsException.class })

@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.Convert;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data

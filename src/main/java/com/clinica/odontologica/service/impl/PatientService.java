@@ -11,7 +11,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.ArrayList;
@@ -35,6 +34,9 @@ public class PatientService implements CRUDService<PatientDTO> {
 
     @Override
     public PatientDTO create(PatientDTO patientDTO) throws DataAlreadyExistsException {
+        if(patientDTO.getDni() < 1 )
+            throw new IllegalArgumentException("The dni for the patient must not be negative or 0");
+
         Patient patient = mapper.convertValue(patientDTO, Patient.class);
 
         if(verifyPatientDB(patient))
