@@ -18,7 +18,6 @@ public class TurnDTO {
     private Long id;
     private PatientDTO patient;
     private DentistDTO dentist;
-
     @Convert(converter = LocalDateTimeConverter.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateHour;

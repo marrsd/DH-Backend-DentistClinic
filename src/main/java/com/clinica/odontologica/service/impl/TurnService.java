@@ -3,6 +3,7 @@ package com.clinica.odontologica.service.impl;
 import com.clinica.odontologica.domain.Dentist;
 import com.clinica.odontologica.domain.Patient;
 import com.clinica.odontologica.domain.Turn;
+import com.clinica.odontologica.domain.auth.User;
 import com.clinica.odontologica.dto.DentistDTO;
 import com.clinica.odontologica.dto.PatientDTO;
 import com.clinica.odontologica.dto.TurnDTO;
@@ -21,7 +22,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -33,14 +36,18 @@ public class TurnService implements CRUDService<TurnDTO> {
     private final PatientService patientService;
     @Qualifier("DentistService")
     private final DentistService dentistService;
+    @Qualifier("UserService")
+    private final UserService userService;
+
     @Autowired
     ObjectMapper mapper;
 
     @Autowired
-    public TurnService(TurnRepository turnRepository, PatientService patientService, DentistService dentistService) {
+    public TurnService(TurnRepository turnRepository, PatientService patientService, DentistService dentistService, UserService userService) {
         this.turnRepository = turnRepository;
         this.patientService = patientService;
         this.dentistService = dentistService;
+        this.userService = userService;
     }
     @Override
     public TurnDTO create(TurnDTO turnDTO) throws IntegrityDataException, DataAlreadyExistsException, NoSuchDataExistsException {
@@ -51,16 +58,16 @@ public class TurnService implements CRUDService<TurnDTO> {
         if(turnDTO.getPatient() == null)
             throw new IntegrityDataException("You can't define a patient null to the turn");
 
-        PatientDTO patient = patientService.getById(turnDTO.getPatient().getId());
-        DentistDTO dentist = dentistService.getById(turnDTO.getDentist().getId());
-
         if(verifyFreeTurn(turnDTO))
             throw new DataAlreadyExistsException("The turn is already reserved, try another one.");
 
+        Patient patient = getUserFromPatient(turnDTO);
+        Dentist dentist = getUserFromDentist(turnDTO);
+
         Turn turn = mapper.convertValue(turnDTO, Turn.class);
 
-        turn.setPatient(mapper.convertValue(patient, Patient.class));
-        turn.setDentist(mapper.convertValue(dentist, Dentist.class));
+        turn.setPatient(patient);
+        turn.setDentist(dentist);
 
         TurnDTO turnDto = mapper.convertValue(turnRepository.save(turn), TurnDTO.class);
 
@@ -192,13 +199,30 @@ public class TurnService implements CRUDService<TurnDTO> {
     }
 
     private void updateValues(Turn turnToUpdate, TurnDTO turnDTO) throws IntegrityDataException, NoSuchDataExistsException {
-
-        PatientDTO patient = patientService.getById(turnDTO.getPatient().getId());
-        DentistDTO dentist = dentistService.getById(turnDTO.getDentist().getId());
+        Patient patient = getUserFromPatient(turnDTO);
+        Dentist dentist = getUserFromDentist(turnDTO);
 
         turnToUpdate.setDateHour(mapper.convertValue(turnDTO, Turn.class).getDateHour());
-        turnToUpdate.setPatient(mapper.convertValue(patient, Patient.class));
-        turnToUpdate.setDentist(mapper.convertValue(dentist, Dentist.class));
+        turnToUpdate.setPatient(patient);
+        turnToUpdate.setDentist(dentist);
+    }
+
+    private Patient getUserFromPatient(TurnDTO turnDTO) throws IntegrityDataException, NoSuchDataExistsException {
+        PatientDTO patientDTO = patientService.getById(turnDTO.getPatient().getId());
+        User userPatient = userService.getUser(patientDTO.getUser().getUsername());
+        Patient patient = mapper.convertValue(patientDTO, Patient.class);
+        patient.setUser(userPatient);
+
+        return patient;
+    }
+
+    private Dentist getUserFromDentist(TurnDTO turnDTO) throws IntegrityDataException, NoSuchDataExistsException {
+        DentistDTO dentistDTO = dentistService.getById(turnDTO.getDentist().getId());
+        User userDentist = userService.getUser(dentistDTO.getUser().getUsername());
+        Dentist dentist = mapper.convertValue(dentistDTO, Dentist.class);
+        dentist.setUser(userDentist);
+
+        return dentist;
     }
 
 }

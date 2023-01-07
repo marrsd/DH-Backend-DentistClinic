@@ -3,6 +3,7 @@ package com.clinica.odontologica.controller.impl;
 
 import com.clinica.odontologica.dto.AddressDTO;
 import com.clinica.odontologica.dto.PatientDTO;
+import com.clinica.odontologica.dto.UserDTO;
 import com.clinica.odontologica.service.impl.PatientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,9 @@ class PatientControllerTest {
     private PatientDTO patientDTO1;
     private PatientDTO patientDTO2;
     private AddressDTO addressDTO;
+
+    private UserDTO user1;
+    private UserDTO user2;
 
     @BeforeEach
     public void init() {

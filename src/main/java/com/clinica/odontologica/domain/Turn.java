@@ -9,6 +9,7 @@ import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.Future;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -35,7 +36,7 @@ public class Turn {
     @JoinColumn(name="id_dentist", referencedColumnName = "dentist_id", nullable = false)
     private Dentist dentist;
 
-    @Future(message = "Date and hour of the turn must not be blank or null. Date and hour must be greater than today's date. Date and hour format must be yyyy-MM-dd HH:mm:ss")
+    @FutureOrPresent(message = "Date and hour of the turn must not be blank or null. Date and hour must not be past. Date and hour format must be yyyy-MM-dd HH:mm:ss")
     @Convert(converter = LocalDateTimeConverter.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateHour;

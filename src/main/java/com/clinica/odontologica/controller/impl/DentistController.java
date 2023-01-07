@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/dentists")
+@Tag(name = "dentists-endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class DentistController implements CRUDController<DentistDTO> {
     private DentistService dentistService;
     @Autowired
@@ -31,14 +35,15 @@ public class DentistController implements CRUDController<DentistDTO> {
     }
 
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Dentist created", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = DentistDTO.class)) }),
+            @ApiResponse(responseCode = "201", description = "Dentist created", content = { @Content(mediaType = "text/plain", schema = @Schema(type = "string", example = "Success"))}),
             @ApiResponse(responseCode = "409", description = "The dentist already exists", content = @Content),
             @ApiResponse(responseCode = "400", description = "The input format is incorrect", content = @Content)
     })
     @Operation(summary = "Create new dentist")
     @PostMapping("/new")
-    public ResponseEntity<DentistDTO> register(@RequestBody DentistDTO dentist) throws IntegrityDataException, DataAlreadyExistsException {
-        return ResponseEntity.ok(dentistService.create(dentist));
+    public ResponseEntity<HttpStatus> register(@RequestBody DentistDTO dentist) throws DataAlreadyExistsException, NoSuchDataExistsException {
+        dentistService.create(dentist);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @ApiResponses(value = {

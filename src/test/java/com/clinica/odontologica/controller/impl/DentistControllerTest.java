@@ -29,15 +29,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class DentistControllerTest {
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private DentistService dentistService;
-
     @Autowired
     ObjectMapper objectMapper;
 
     private DentistDTO dentistDTO1;
     private DentistDTO dentistDTO2;
+
 
     @BeforeEach
     public void init() {

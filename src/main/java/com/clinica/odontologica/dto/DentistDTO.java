@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,4 +15,5 @@ public class DentistDTO {
     private Long registrationNumber;
     private String firstname;
     private String lastname;
+    private UserDTO user;
 }

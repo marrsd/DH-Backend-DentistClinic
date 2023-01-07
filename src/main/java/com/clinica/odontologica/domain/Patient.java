@@ -1,5 +1,6 @@
 package com.clinica.odontologica.domain;
 
+import com.clinica.odontologica.domain.auth.User;
 import com.clinica.odontologica.util.LocalDateTimeConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
@@ -44,4 +45,9 @@ public class Patient {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Turn> turns = new HashSet<>();
+
+    @NotNull(message = "User must not be blank or null")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="id_user", referencedColumnName = "user_id", nullable = false)
+    private User user;
 }

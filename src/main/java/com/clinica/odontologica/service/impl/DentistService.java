@@ -1,6 +1,7 @@
 package com.clinica.odontologica.service.impl;
 
 import com.clinica.odontologica.domain.Dentist;
+import com.clinica.odontologica.domain.auth.User;
 import com.clinica.odontologica.dto.DentistDTO;
 import com.clinica.odontologica.exception.*;
 import com.clinica.odontologica.repository.DentistRepository;
@@ -9,34 +10,51 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
 import java.util.*;
 
+
 @Service("DentistService")
 public class DentistService implements CRUDService<DentistDTO> {
 
     private static final Logger LOGGER = LogManager.getLogger(DentistService.class);
     private final DentistRepository dentistRepository;
+    @Qualifier("UserService")
+    private final UserService userService;
+
     @Autowired
     ObjectMapper mapper;
 
     @Autowired
-    public DentistService(DentistRepository dentistRepository) {
+    public DentistService(DentistRepository dentistRepository, UserService userService) {
         this.dentistRepository = dentistRepository;
+        this.userService = userService;
     }
 
     @Override
-    public DentistDTO create(DentistDTO dentistDTO) throws DataAlreadyExistsException {
+    public DentistDTO create(DentistDTO dentistDTO) throws DataAlreadyExistsException, NoSuchDataExistsException {
+        User userConverted = mapper.convertValue(dentistDTO.getUser(), User.class);
+
         if(dentistDTO.getDni() < 1 || dentistDTO.getRegistrationNumber() < 1)
             throw new IllegalArgumentException("The dni and the registration number for the dentist must not be negative or 0");
+
+        User user = userService.getUser(userConverted.getUsername());
 
         Dentist dentist = mapper.convertValue(dentistDTO, Dentist.class);
 
         if(verifyDentistInDB(dentist))
             throw new DataAlreadyExistsException("The dentist with dni: " +dentist.getDni() + " and registration number: " + dentist.getRegistrationNumber() + " already exist!");
+
+        if(user.getAsigned() && user.getIsAdmin() == false)
+            throw new DataAlreadyExistsException("The username already exists");
+
+        user.setAsigned(true);
+
+        dentist.setUser(user);
 
         DentistDTO dentistDto = mapper.convertValue(dentistRepository.save(dentist), DentistDTO.class);
 

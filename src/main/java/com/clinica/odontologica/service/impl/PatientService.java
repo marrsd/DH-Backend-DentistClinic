@@ -1,7 +1,9 @@
 package com.clinica.odontologica.service.impl;
 
 import com.clinica.odontologica.domain.Patient;
+import com.clinica.odontologica.domain.auth.User;
 import com.clinica.odontologica.dto.PatientDTO;
+import com.clinica.odontologica.dto.UserDTO;
 import com.clinica.odontologica.exception.*;
 import com.clinica.odontologica.repository.PatientRepository;
 import com.clinica.odontologica.service.CRUDService;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Service("PatientService")
 public class PatientService implements CRUDService<PatientDTO> {
 
@@ -23,17 +26,24 @@ public class PatientService implements CRUDService<PatientDTO> {
     private final PatientRepository patientRepository;
     @Qualifier("AddressService")
     private final AddressService addressService;
+
+    @Qualifier("UserService")
+    private final UserService userService;
+
     @Autowired
     ObjectMapper mapper;
 
     @Autowired
-    public PatientService(AddressService addressService, PatientRepository patientRepository) {
+    public PatientService(AddressService addressService, PatientRepository patientRepository, UserService userService) {
         this.addressService = addressService;
         this.patientRepository = patientRepository;
+        this.userService = userService;
     }
 
     @Override
-    public PatientDTO create(PatientDTO patientDTO) throws DataAlreadyExistsException {
+    public PatientDTO create(PatientDTO patientDTO) throws DataAlreadyExistsException, NoSuchDataExistsException {
+        User userConverted = mapper.convertValue(patientDTO.getUser(), User.class);
+
         if(patientDTO.getDni() < 1 )
             throw new IllegalArgumentException("The dni for the patient must not be negative or 0");
 
@@ -41,6 +51,15 @@ public class PatientService implements CRUDService<PatientDTO> {
 
         if(verifyPatientDB(patient))
             throw new DataAlreadyExistsException("The patient with dni:" + patient.getDni() + " already exist!");
+
+        User user = userService.getUser(userConverted.getUsername());
+
+        if(user.getAsigned() && user.getIsAdmin() == false)
+            throw new DataAlreadyExistsException("The username already exists");
+
+        user.setAsigned(true);
+
+        patient.setUser(user);
 
         PatientDTO patientDto = mapper.convertValue(patientRepository.save(patient), PatientDTO.class);
 
@@ -106,7 +125,6 @@ public class PatientService implements CRUDService<PatientDTO> {
         if(patientDTO.getId() < 1)
             throw new IllegalArgumentException("Patient id must not be negative");
 
-        addressService.getById(patientDTO.getAddress().getId());
         Patient patientDB = patientRepository.findById(mapper.convertValue(patientDTO, Patient.class).getId())
                 .orElseThrow(() -> new NoSuchDataExistsException("The patient trying to update was not found"));
 

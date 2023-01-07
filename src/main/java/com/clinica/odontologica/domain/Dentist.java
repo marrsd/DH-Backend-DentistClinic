@@ -1,5 +1,6 @@
 package com.clinica.odontologica.domain;
 
+import com.clinica.odontologica.domain.auth.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -41,4 +42,9 @@ public class Dentist {
     @OneToMany(mappedBy = "dentist", fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Turn> turns = new HashSet<>();
+
+    @NotNull(message = "User must not be blank or null. You need to create one first")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="id_user", referencedColumnName = "user_id", nullable = false)
+    private User user;
 }
