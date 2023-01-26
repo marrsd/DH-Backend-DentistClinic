@@ -19,13 +19,16 @@ import java.util.*;
 public class AddressService implements CRUDService<AddressDTO> {
 
     private static final Logger LOGGER = LogManager.getLogger(AddressService.class);
+
     private final AddressRepository addressRepository;
+
     @Autowired
-    ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     @Autowired
     public AddressService(AddressRepository addressRepository) {
         this.addressRepository = addressRepository;
+        this.mapper = new ObjectMapper();
     }
 
     @Override

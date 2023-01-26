@@ -3,6 +3,7 @@ package com.clinica.odontologica.domain;
 import com.clinica.odontologica.domain.auth.User;
 import com.clinica.odontologica.util.LocalDateTimeConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
@@ -34,6 +35,7 @@ public class Patient {
     @NotBlank(message = "Lastname must not be blank or null")
     private String lastname;
 
+    @JsonIgnore
     @Convert(converter = LocalDateTimeConverter.class)
     private LocalDateTime dateHourAdmission;
 

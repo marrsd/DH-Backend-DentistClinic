@@ -2,6 +2,8 @@ package com.clinica.odontologica.domain;
 
 import com.clinica.odontologica.util.LocalDateTimeConverter;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -37,7 +39,7 @@ public class Turn {
     private Dentist dentist;
 
     @FutureOrPresent(message = "Date and hour of the turn must not be blank or null. Date and hour must not be past. Date and hour format must be yyyy-MM-dd HH:mm:ss")
-    @Convert(converter = LocalDateTimeConverter.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Convert(converter = LocalDateTimeConverter.class)
     private LocalDateTime dateHour;
 }

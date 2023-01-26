@@ -1,96 +1,223 @@
 package com.clinica.odontologica.service.impl;
 
+import com.clinica.odontologica.domain.Dentist;
+import com.clinica.odontologica.domain.auth.ERole;
+import com.clinica.odontologica.domain.auth.User;
 import com.clinica.odontologica.dto.DentistDTO;
+import com.clinica.odontologica.dto.UserDTO;
+import com.clinica.odontologica.exception.DataAlreadyExistsException;
+import com.clinica.odontologica.exception.IntegrityDataException;
+import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.exception.ResourceNotFoundException;
+import com.clinica.odontologica.repository.DentistRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class DentistServiceTest {
 
-    @Autowired
-    DentistService dentistService;
+    @InjectMocks
+    private DentistService dentistService;
 
-    private DentistDTO dentist;
-    
+    @Mock
+    private DentistRepository dentistRepository;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private ObjectMapper mapper;
+
+    private DentistDTO dentistDTO;
+
+    private Dentist dentist;
+
+    private User user;
+
+    private UserDTO userDTO;
+
     @BeforeEach
     public void init() {
-        dentist = new DentistDTO();
-        dentist.setFirstname("Juan");
-        dentist.setLastname("Perez");
+        user = new User(1L, "userabc", "1234", ERole.USER, false, false);
+        userDTO = new UserDTO("userabc", false);
+
+        dentistDTO = new DentistDTO();
+        dentistDTO.setId(1L);
+        dentistDTO.setDni(1234L);
+        dentistDTO.setRegistrationNumber(145876L);
+        dentistDTO.setFirstname("Juan");
+        dentistDTO.setLastname("Perez");
+        dentistDTO.setUser(userDTO);
+
+        dentist = new Dentist();
+        dentist.setId(1L);
         dentist.setDni(1234L);
         dentist.setRegistrationNumber(145876L);
+        dentist.setFirstname("Juan");
+        dentist.setLastname("Perez");
     }
 
     @Test
     @Order(1)
     public void createDentistTest() throws Exception {
-        DentistDTO d = new DentistDTO();
-        d.setId(1L);
-        d.setDni(1234L);
-        d.setRegistrationNumber(145876L);
-        d.setFirstname("Juan");
-        d.setLastname("Perez");
+        when(userService.getUserByUsername(anyString())).thenReturn(user);
 
-        dentistService.create(dentist);
-        assertEquals(d.getDni(), dentist.getDni());
+        when(dentistRepository.save(any(Dentist.class))).thenReturn(dentist);
+
+        DentistDTO dentist1 = dentistService.create(dentistDTO);
+
+        assertEquals(dentist.getFirstname(), dentist1.getFirstname());
     }
 
     @Test
     @Order(2)
-    public void getAllDentistsTest() throws Exception{
-        dentist.setDni(1634L);
-        dentist.setRegistrationNumber(14876L);
-        dentistService.create(dentist);
+    public void conflictCreateDentistAlreadyExistsTest() throws Exception {
+        when(userService.getUserByUsername(anyString())).thenReturn(user);
 
-        List<DentistDTO> dentists = dentistService.getAll();
-        assertNotEquals(dentists.size(), 0);
+        dentistService.create(dentistDTO);
 
+        assertThrows(DataAlreadyExistsException.class, () -> dentistService.create(dentistDTO));
     }
 
     @Test
     @Order(3)
-    public void getDentistByIdTest() throws Exception {
-        dentist.setDni(1664L);
-        dentist.setRegistrationNumber(13876L);
-        DentistDTO d = dentistService.create(dentist);
+    public void badRequestCreateDentistTest() {
+        dentistDTO.setDni(-1234L);
 
-        DentistDTO dentist = dentistService.getById(d.getId());
-        assertNotNull(dentist);
+        dentistDTO.setRegistrationNumber(-15572L);
 
+        assertThrows(IllegalArgumentException.class, () -> dentistService.create(dentistDTO));
     }
+
     @Test
     @Order(4)
-    public void updateDentistTest() throws Exception {
-        String apellido = "Perez Jimenez";
+    public void getAllDentistsTest() throws Exception {
+        when(dentistRepository.findAll(Sort.by(Sort.Direction.DESC, "firstname"))).thenReturn(Arrays.asList(dentist));
 
-        dentist.setDni(16234L);
-        dentist.setRegistrationNumber(12676L);
-        DentistDTO d = dentistService.create(dentist);
+        List<DentistDTO> dentists = dentistService.getAll();
 
-        d.setLastname(apellido);
-
-        dentistService.update(d);
-        assertEquals(d.getLastname(), apellido);
-
+        assertEquals(dentists.get(0).getRegistrationNumber(), dentist.getRegistrationNumber());
     }
+
     @Test
     @Order(5)
+    public void notFoundGetAllDentistsTest() {
+        assertThrows(ResourceNotFoundException.class, () -> dentistService.getAll());
+    }
+
+    @Test
+    @Order(6)
+    public void getDentistByIdTest() throws Exception {
+        when(dentistRepository.findById(anyLong())).thenReturn(Optional.of(dentist));
+
+        DentistDTO dentistDTO = dentistService.getById(1L);
+
+        assertNotNull(dentistDTO);
+    }
+
+    @Test
+    @Order(7)
+    public void badRequestGetDentistByNullId() {
+        dentistDTO.setId(null);
+
+        assertThrows(IntegrityDataException.class, () -> dentistService.getById(dentistDTO.getId()));
+    }
+
+    @Test
+    @Order(8)
+    public void badRequestGetDentistByNegativeId() {
+        dentistDTO.setId(-1L);
+
+        assertThrows(IllegalArgumentException.class, () -> dentistService.getById(dentistDTO.getId()));
+    }
+
+    @Test
+    @Order(9)
+    public void notFoundGetDentistById() {
+        dentistDTO.setId(30L);
+
+        when(dentistRepository.findById(dentistDTO.getId())).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchDataExistsException.class, () -> dentistService.getById(dentistDTO.getId()));
+    }
+
+    @Test
+    @Order(10)
+    public void updateDentistTest() throws Exception {
+        String lastname = "Perez Jimenez";
+
+        dentistDTO.setLastname(lastname);
+        dentist.setLastname(lastname);
+
+        when(dentistRepository.findById(anyLong())).thenReturn(Optional.of(dentist));
+        when(dentistRepository.save(any(Dentist.class))).thenReturn(dentist);
+
+        DentistDTO dentistUpdated = dentistService.update(dentistDTO);
+
+        assertEquals(dentistUpdated.getLastname(), dentist.getLastname());
+    }
+
+    @Test
+    @Order(11)
+    public void badRequestUpdateNullDentistsTest() {
+        dentistDTO = null;
+
+        assertThrows(IntegrityDataException.class, () -> dentistService.update(dentistDTO));
+    }
+
+    @Test
+    @Order(12)
+    public void notFoundUpdateDentistTest() {
+        assertThrows(NoSuchDataExistsException.class, () -> dentistService.update(dentistDTO));
+    }
+
+    @Test
+    @Order(13)
     public void deleteDentistTest() throws Exception {
-        dentist.setDni(16212L);
-        dentist.setRegistrationNumber(14576L);
-        DentistDTO d = dentistService.create(dentist);
+        when(dentistRepository.findById(anyLong())).thenReturn(Optional.of(dentist));
 
-        dentistService.delete(d.getId());
+        dentistService.delete(dentistDTO.getId());
 
-        ResourceNotFoundException exc = assertThrows(ResourceNotFoundException.class, () ->  dentistService.getById(d.getId()));
-        assertEquals(exc.getMessage(), "The dentist with id: " + d.getId() + " was not found!");
+        verify(dentistRepository, times(1)).deleteById(anyLong());
+    }
 
+    @Test
+    @Order(14)
+    public void notFoundDeleteDentistTest() {
+       dentistDTO.setId(15L);
+
+       when(dentistRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+       assertThrows(NoSuchDataExistsException.class, () -> dentistService.delete(dentistDTO.getId()));
+    }
+
+    @Test
+    @Order(15)
+    public void badRequestDeleteDentistWithNullIdTest() {
+        dentistDTO.setId(null);
+
+        assertThrows(IntegrityDataException.class, () -> dentistService.delete(dentistDTO.getId()));
+    }
+
+    @Test
+    @Order(16)
+    public void badRequestDeleteDentistWithNegativeId() {
+        dentistDTO.setId(-1L);
+
+        assertThrows(IllegalArgumentException.class, () -> dentistService.delete(dentistDTO.getId()));
     }
 }

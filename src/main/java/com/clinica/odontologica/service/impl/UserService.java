@@ -16,31 +16,38 @@ import java.util.Optional;
 
 @Service("UserService")
 public class UserService {
+
     private static UserRepository userRepository;
+
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     @Autowired
     public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.mapper = new ObjectMapper();
     }
 
     public User createUser(UserRequest userRequest) throws DataAlreadyExistsException {
         User user = mapper.convertValue(userRequest, User.class);
+
         if (user.getIsAdmin())
             user.setRole(ERole.valueOf("ADMIN"));
         else
             user.setRole(ERole.valueOf("USER"));
+
         verifyUser(user);
+
         user.setAsigned(Boolean.FALSE);
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+
         return userRepository.save(user);
     }
 
-    public User getUser(String username) throws NoSuchDataExistsException {
+    public User getUserByUsername(String username) throws NoSuchDataExistsException {
         Optional<User> user = userRepository.findByUsername(username);
         if(user.isPresent())
             return user.get();

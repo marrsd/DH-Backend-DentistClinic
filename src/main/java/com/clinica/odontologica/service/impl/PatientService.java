@@ -3,7 +3,6 @@ package com.clinica.odontologica.service.impl;
 import com.clinica.odontologica.domain.Patient;
 import com.clinica.odontologica.domain.auth.User;
 import com.clinica.odontologica.dto.PatientDTO;
-import com.clinica.odontologica.dto.UserDTO;
 import com.clinica.odontologica.exception.*;
 import com.clinica.odontologica.repository.PatientRepository;
 import com.clinica.odontologica.service.CRUDService;
@@ -23,7 +22,9 @@ import java.util.List;
 public class PatientService implements CRUDService<PatientDTO> {
 
     private static final Logger LOGGER = LogManager.getLogger(PatientService.class);
+
     private final PatientRepository patientRepository;
+
     @Qualifier("AddressService")
     private final AddressService addressService;
 
@@ -31,17 +32,19 @@ public class PatientService implements CRUDService<PatientDTO> {
     private final UserService userService;
 
     @Autowired
-    ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     @Autowired
     public PatientService(AddressService addressService, PatientRepository patientRepository, UserService userService) {
         this.addressService = addressService;
         this.patientRepository = patientRepository;
         this.userService = userService;
+        this.mapper = new ObjectMapper();
     }
 
     @Override
     public PatientDTO create(PatientDTO patientDTO) throws DataAlreadyExistsException, NoSuchDataExistsException {
+
         User userConverted = mapper.convertValue(patientDTO.getUser(), User.class);
 
         if(patientDTO.getDni() < 1 )
@@ -52,7 +55,7 @@ public class PatientService implements CRUDService<PatientDTO> {
         if(verifyPatientDB(patient))
             throw new DataAlreadyExistsException("The patient with dni:" + patient.getDni() + " already exist!");
 
-        User user = userService.getUser(userConverted.getUsername());
+        User user = userService.getUserByUsername(userConverted.getUsername());
 
         if(user.getAsigned() && user.getIsAdmin() == false)
             throw new DataAlreadyExistsException("The username already exists");
@@ -61,7 +64,9 @@ public class PatientService implements CRUDService<PatientDTO> {
 
         patient.setUser(user);
 
-        PatientDTO patientDto = mapper.convertValue(patientRepository.save(patient), PatientDTO.class);
+        Patient p = patientRepository.save(patient);
+
+        PatientDTO patientDto = mapper.convertValue(p, PatientDTO.class);
 
         LOGGER.info("Method - Create: Successfully registered patient: " + patientDto);
         return patientDto;

@@ -6,6 +6,7 @@ import com.clinica.odontologica.dto.DentistDTO;
 import com.clinica.odontologica.exception.*;
 import com.clinica.odontologica.repository.DentistRepository;
 import com.clinica.odontologica.service.CRUDService;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,17 +23,20 @@ import java.util.*;
 public class DentistService implements CRUDService<DentistDTO> {
 
     private static final Logger LOGGER = LogManager.getLogger(DentistService.class);
+
     private final DentistRepository dentistRepository;
-    @Qualifier("UserService")
-    private final UserService userService;
 
     @Autowired
-    ObjectMapper mapper;
+    private final ObjectMapper mapper;
+
+    @Qualifier("UserService")
+    private final UserService userService;
 
     @Autowired
     public DentistService(DentistRepository dentistRepository, UserService userService) {
         this.dentistRepository = dentistRepository;
         this.userService = userService;
+        this.mapper = new ObjectMapper();
     }
 
     @Override
@@ -42,7 +46,7 @@ public class DentistService implements CRUDService<DentistDTO> {
         if(dentistDTO.getDni() < 1 || dentistDTO.getRegistrationNumber() < 1)
             throw new IllegalArgumentException("The dni and the registration number for the dentist must not be negative or 0");
 
-        User user = userService.getUser(userConverted.getUsername());
+        User user = userService.getUserByUsername(userConverted.getUsername());
 
         Dentist dentist = mapper.convertValue(dentistDTO, Dentist.class);
 
@@ -56,15 +60,19 @@ public class DentistService implements CRUDService<DentistDTO> {
 
         dentist.setUser(user);
 
-        DentistDTO dentistDto = mapper.convertValue(dentistRepository.save(dentist), DentistDTO.class);
+        Dentist dentist1 = dentistRepository.save(dentist);
+
+        DentistDTO dentistDto = mapper.convertValue(dentist1, DentistDTO.class);
 
         LOGGER.info("Method - Create: Successfully registered dentist "+ dentistDto);
+
         return dentistDto;
     }
 
     @Override
     public List<DentistDTO> getAll() throws ResourceNotFoundException {
        List<Dentist> dentists = dentistRepository.findAll(Sort.by(Sort.Direction.DESC, "firstname"));
+
 
        if(dentists.isEmpty())
            throw new ResourceNotFoundException("There aren't registered dentists");

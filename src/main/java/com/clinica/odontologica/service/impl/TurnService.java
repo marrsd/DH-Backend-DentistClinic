@@ -13,7 +13,10 @@ import com.clinica.odontologica.exception.ResourceNotFoundException;
 import com.clinica.odontologica.exception.IntegrityDataException;
 import com.clinica.odontologica.repository.TurnRepository;
 import com.clinica.odontologica.service.CRUDService;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,25 +25,27 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @Service
 public class TurnService implements CRUDService<TurnDTO> {
 
     private static final Logger LOGGER = LogManager.getLogger(DentistService.class);
+
     private final TurnRepository turnRepository;
+
     @Qualifier("PatientService")
     private final PatientService patientService;
+
     @Qualifier("DentistService")
     private final DentistService dentistService;
+
     @Qualifier("UserService")
     private final UserService userService;
 
     @Autowired
-    ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     @Autowired
     public TurnService(TurnRepository turnRepository, PatientService patientService, DentistService dentistService, UserService userService) {
@@ -48,10 +53,12 @@ public class TurnService implements CRUDService<TurnDTO> {
         this.patientService = patientService;
         this.dentistService = dentistService;
         this.userService = userService;
+        this.mapper = new ObjectMapper();
+        this.mapper.registerModule(new JavaTimeModule());
+        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
     @Override
     public TurnDTO create(TurnDTO turnDTO) throws IntegrityDataException, DataAlreadyExistsException, NoSuchDataExistsException {
-
         if(turnDTO.getDentist() == null)
                 throw new IntegrityDataException("You can't define a dentist null to the turn");
 
@@ -161,7 +168,7 @@ public class TurnService implements CRUDService<TurnDTO> {
             throw new IntegrityDataException("You must to define a date for the turn");
 
         Turn turnDB = turnRepository.findById(mapper.convertValue(turnDTO, Turn.class).getId())
-                .orElseThrow(() ->new NoSuchDataExistsException("You can't update a turn doesn't exist. You must to register it first"));
+                .orElseThrow(() -> new NoSuchDataExistsException("You can't update a turn doesn't exist. You must to register it first"));
 
         if (verifyFreeTurn(turnDTO))
             throw new DataAlreadyExistsException("The turn is already reserved, try another one.");
@@ -209,7 +216,7 @@ public class TurnService implements CRUDService<TurnDTO> {
 
     private Patient getUserFromPatient(TurnDTO turnDTO) throws IntegrityDataException, NoSuchDataExistsException {
         PatientDTO patientDTO = patientService.getById(turnDTO.getPatient().getId());
-        User userPatient = userService.getUser(patientDTO.getUser().getUsername());
+        User userPatient = userService.getUserByUsername(patientDTO.getUser().getUsername());
         Patient patient = mapper.convertValue(patientDTO, Patient.class);
         patient.setUser(userPatient);
 
@@ -218,7 +225,7 @@ public class TurnService implements CRUDService<TurnDTO> {
 
     private Dentist getUserFromDentist(TurnDTO turnDTO) throws IntegrityDataException, NoSuchDataExistsException {
         DentistDTO dentistDTO = dentistService.getById(turnDTO.getDentist().getId());
-        User userDentist = userService.getUser(dentistDTO.getUser().getUsername());
+        User userDentist = userService.getUserByUsername(dentistDTO.getUser().getUsername());
         Dentist dentist = mapper.convertValue(dentistDTO, Dentist.class);
         dentist.setUser(userDentist);
 
