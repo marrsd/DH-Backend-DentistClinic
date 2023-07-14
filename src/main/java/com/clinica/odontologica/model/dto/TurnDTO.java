@@ -1,4 +1,4 @@
-package com.clinica.odontologica.dto;
+package com.clinica.odontologica.model.dto;
 
 import com.clinica.odontologica.util.LocalDateTimeConverter;
 import com.fasterxml.jackson.annotation.JsonFormat;

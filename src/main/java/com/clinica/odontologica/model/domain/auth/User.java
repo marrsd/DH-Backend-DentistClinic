@@ -1,7 +1,5 @@
-package com.clinica.odontologica.domain.auth;
+package com.clinica.odontologica.model.domain.auth;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,12 +10,13 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @Entity
-@Table(name="Users")
+@Table(name = "Users")
 
 public class User implements UserDetails {
     @Id

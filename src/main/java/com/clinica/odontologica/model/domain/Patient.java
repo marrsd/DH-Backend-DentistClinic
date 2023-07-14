@@ -1,9 +1,8 @@
-package com.clinica.odontologica.domain;
+package com.clinica.odontologica.model.domain;
 
-import com.clinica.odontologica.domain.auth.User;
+import com.clinica.odontologica.model.domain.auth.User;
 import com.clinica.odontologica.util.LocalDateTimeConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
@@ -13,12 +12,13 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @Entity
-@Table(name="Patients")
+@Table(name = "Patients")
 public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,8 +40,8 @@ public class Patient {
     private LocalDateTime dateHourAdmission;
 
     @NotNull(message = "Address must not be blank or null")
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="id_address", referencedColumnName = "address_id", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_address", referencedColumnName = "address_id", nullable = false)
     private Address address;
 
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
@@ -49,7 +49,7 @@ public class Patient {
     private Set<Turn> turns = new HashSet<>();
 
     @NotNull(message = "User must not be blank or null")
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="id_user", referencedColumnName = "user_id", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_user", referencedColumnName = "user_id", nullable = false)
     private User user;
 }

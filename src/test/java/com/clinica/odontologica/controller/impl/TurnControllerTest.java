@@ -1,10 +1,11 @@
 package com.clinica.odontologica.controller.impl;
 
-import com.clinica.odontologica.securityHelper.SecurityConfigForTest;
-import com.clinica.odontologica.dto.*;
+import com.clinica.odontologica.security.SecurityConfig;
+import com.clinica.odontologica.security.manager.CustomAuthenticationManager;
 import com.clinica.odontologica.exception.IntegrityDataException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.exception.ResourceNotFoundException;
+import com.clinica.odontologica.model.dto.*;
 import com.clinica.odontologica.service.impl.TurnService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,11 +16,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -34,16 +32,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Import(SecurityConfigForTest.class)
+@Import(SecurityConfig.class)
 @WebMvcTest(TurnController.class)
 class TurnControllerTest {
-
-    @Autowired
-    private WebApplicationContext context;
 
     @Autowired
     MockMvc mockMvc;
@@ -55,7 +49,7 @@ class TurnControllerTest {
     ObjectMapper objectMapper;
 
     @MockBean
-    JwtDecoder jwtDecoder;
+    CustomAuthenticationManager customAuthenticationManager;
 
     private PatientDTO patient;
     private DentistDTO dentist;
@@ -66,13 +60,12 @@ class TurnControllerTest {
 
     @BeforeEach
     public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
 
         user1 = new UserDTO("userfc", true);
         user2 = new UserDTO("userma", false);
 
         address = new AddressDTO(1L, "23A", 15, "Norte", "Verde");
-        patient =  new PatientDTO(1L, 123L, "Juan", "Perez", address, user1);
+        patient = new PatientDTO(1L, 123L, "Juan", "Perez", address, user1);
         dentist = new DentistDTO(2L, 789L, 972L, "Maria", "Acosta", user2);
         turn = new TurnDTO(1L, patient, dentist, LocalDateTime.now().plusDays(1));
     }
@@ -140,7 +133,7 @@ class TurnControllerTest {
         when(turnService.getAll()).thenReturn(list);
 
         MvcResult response = this.mockMvc.perform(get("/turns/all")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
+                .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", is(list.size())))
                 .andReturn();
@@ -166,10 +159,9 @@ class TurnControllerTest {
         when(turnService.getAll()).thenReturn(list);
 
         this.mockMvc.perform(get("/turns/all")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("USER"))))
+                .with(jwt().authorities(new SimpleGrantedAuthority("USER"))))
                 .andExpect(status().isForbidden());
     }
-
 
     @Test
     public void getTurnByIdTest() throws Exception {
@@ -204,9 +196,9 @@ class TurnControllerTest {
         String payloadTurn = objectMapper.writeValueAsString(turn);
 
         MvcResult response = this.mockMvc.perform(put("/turns/update")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payloadTurn))
+                .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payloadTurn))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andReturn();
@@ -217,18 +209,20 @@ class TurnControllerTest {
     @Test
     public void badRequestToUpdateTurnTest() throws Exception {
         turn.setDateHour(null);
-        when(turnService.update(any(TurnDTO.class))).thenThrow(new IntegrityDataException("You must to define a date for the turn"));
+        when(turnService.update(any(TurnDTO.class)))
+                .thenThrow(new IntegrityDataException("You must to define a date for the turn"));
 
         String payloadTurn = objectMapper.writeValueAsString(turn);
 
         MvcResult response = this.mockMvc.perform(put("/turns/update")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payloadTurn))
+                .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payloadTurn))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        assertEquals("ERROR: You must to define a date for the turn", response.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        assertEquals("ERROR: You must to define a date for the turn",
+                response.getResponse().getContentAsString(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -236,7 +230,7 @@ class TurnControllerTest {
         doNothing().when(turnService).delete(anyLong());
 
         MvcResult response = this.mockMvc.perform(delete("/turns/delete/{id}", 1L)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
+                .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -248,10 +242,11 @@ class TurnControllerTest {
         doThrow(new NoSuchDataExistsException("The turn with id: 50 was not found")).when(turnService).delete(50L);
 
         MvcResult response = this.mockMvc.perform(delete("/turns/delete/{id}", 50L)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
+                .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
                 .andExpect(status().isNotFound())
                 .andReturn();
 
-        assertEquals("ERROR: The turn with id: 50 was not found", response.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        assertEquals("ERROR: The turn with id: 50 was not found",
+                response.getResponse().getContentAsString(StandardCharsets.UTF_8));
     }
 }

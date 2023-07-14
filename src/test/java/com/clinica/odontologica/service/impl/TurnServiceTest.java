@@ -1,19 +1,16 @@
 package com.clinica.odontologica.service.impl;
 
-import com.clinica.odontologica.domain.Dentist;
-import com.clinica.odontologica.domain.Patient;
-import com.clinica.odontologica.domain.Turn;
-import com.clinica.odontologica.domain.auth.ERole;
-import com.clinica.odontologica.domain.auth.User;
-import com.clinica.odontologica.dto.*;
-import com.clinica.odontologica.exception.DataAlreadyExistsException;
+import com.clinica.odontologica.model.domain.Dentist;
+import com.clinica.odontologica.model.domain.Patient;
+import com.clinica.odontologica.model.domain.Turn;
+import com.clinica.odontologica.model.domain.auth.ERole;
+import com.clinica.odontologica.model.domain.auth.User;
 import com.clinica.odontologica.exception.IntegrityDataException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.exception.ResourceNotFoundException;
+import com.clinica.odontologica.model.dto.*;
 import com.clinica.odontologica.repository.TurnRepository;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -273,7 +270,7 @@ class TurnServiceTest {
     @Test
     @Order(17)
     public void notFoundDeleteTurnTest() {
-       turnDTO.setId(60L);
+        turnDTO.setId(60L);
 
         when(turnRepository.findById(anyLong())).thenReturn(Optional.empty());
 

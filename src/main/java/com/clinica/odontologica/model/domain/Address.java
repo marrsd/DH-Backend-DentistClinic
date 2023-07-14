@@ -1,29 +1,30 @@
-package com.clinica.odontologica.domain;
+package com.clinica.odontologica.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @Entity
-@Table(name="Addresses")
+@Table(name = "Addresses")
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "address_id")
     private Long id;
 
-    @NotBlank(message = "street must not be blank or null")
+    @NotBlank(message = "Street must not be blank or null")
     private String street;
 
     @NotNull(message = "Number address must not be blank or null")

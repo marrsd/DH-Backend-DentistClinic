@@ -1,6 +1,6 @@
 package com.clinica.odontologica.security.manager;
 
-import com.clinica.odontologica.domain.auth.User;
+import com.clinica.odontologica.model.domain.auth.User;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.service.impl.UserService;
 import lombok.AllArgsConstructor;
@@ -25,10 +25,11 @@ public class CustomAuthenticationManager implements AuthenticationManager {
         try {
             User user = userService.getUserByUsername(authentication.getName());
 
-            if(!bCryptPasswordEncoder.matches(authentication.getCredentials().toString(), user.getPassword())) {
+            if (!bCryptPasswordEncoder.matches(authentication.getCredentials().toString(), user.getPassword())) {
                 throw new BadCredentialsException("Wrong Password");
             }
-            return new UsernamePasswordAuthenticationToken(authentication.getName(), user.getPassword(), user.getAuthorities());
+            return new UsernamePasswordAuthenticationToken(authentication.getName(), user.getPassword(),
+                    user.getAuthorities());
         } catch (NoSuchDataExistsException e) {
             throw new RuntimeException(e);
         }

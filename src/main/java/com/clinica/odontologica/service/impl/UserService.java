@@ -1,7 +1,7 @@
 package com.clinica.odontologica.service.impl;
 
-import com.clinica.odontologica.domain.auth.ERole;
-import com.clinica.odontologica.domain.auth.User;
+import com.clinica.odontologica.model.domain.auth.ERole;
+import com.clinica.odontologica.model.domain.auth.User;
 import com.clinica.odontologica.exception.DataAlreadyExistsException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.payload.UserRequest;
@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
 
 import java.util.Optional;
 
@@ -49,7 +48,7 @@ public class UserService {
 
     public User getUserByUsername(String username) throws NoSuchDataExistsException {
         Optional<User> user = userRepository.findByUsername(username);
-        if(user.isPresent())
+        if (user.isPresent())
             return user.get();
         else
             throw new NoSuchDataExistsException("User was not found");
@@ -57,7 +56,7 @@ public class UserService {
 
     public User getById(Long id) throws NoSuchDataExistsException {
         Optional<User> user = userRepository.findById(id);
-        if(user.isPresent())
+        if (user.isPresent())
             return user.get();
         else
             throw new NoSuchDataExistsException("User was not found");
@@ -65,7 +64,7 @@ public class UserService {
 
     public static void verifyUser(User user) throws DataAlreadyExistsException {
         Optional<User> userDB = userRepository.findByUsername(user.getUsername());
-        if(userDB.isPresent())
+        if (userDB.isPresent())
             throw new DataAlreadyExistsException("The username already exists");
     }
 }

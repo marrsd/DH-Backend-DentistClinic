@@ -1,14 +1,15 @@
 package com.clinica.odontologica.controller.impl;
 
-
-import com.clinica.odontologica.securityHelper.SecurityConfigForTest;
-import com.clinica.odontologica.dto.DentistDTO;
-import com.clinica.odontologica.dto.UserDTO;
+import com.clinica.odontologica.security.SecurityConfig;
+import com.clinica.odontologica.security.manager.CustomAuthenticationManager;
 import com.clinica.odontologica.exception.DataAlreadyExistsException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.exception.ResourceNotFoundException;
+import com.clinica.odontologica.model.dto.DentistDTO;
+import com.clinica.odontologica.model.dto.UserDTO;
 import com.clinica.odontologica.service.impl.DentistService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +18,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,43 +30,39 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Import(SecurityConfigForTest.class)
+@Import(SecurityConfig.class)
 @WebMvcTest(DentistController.class)
 class DentistControllerTest {
-    @Autowired
-    private WebApplicationContext context;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private MockMvc mockMvc;
+        @MockBean
+        private DentistService dentistService;
 
-    @MockBean
-    private DentistService dentistService;
+        @Autowired
+        ObjectMapper objectMapper;
 
-    @Autowired
-    ObjectMapper objectMapper;
+        @MockBean
+        CustomAuthenticationManager customAuthenticationManager;
 
-    @MockBean
-    JwtDecoder jwtDecoder;
+        private DentistDTO dentistDTO1;
+        private DentistDTO dentistDTO2;
+        private UserDTO user1;
+        private UserDTO user2;
 
-    private DentistDTO dentistDTO1;
-    private DentistDTO dentistDTO2;
-    private UserDTO user1;
-    private UserDTO user2;
 
-    @BeforeEach
-    public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
 
-        user1 = new UserDTO("userfc", true);
-        user2 = new UserDTO("userma", false);
+        @BeforeEach
+        public void setUpUsers() {
+            user1 = new UserDTO("userfc", true);
+            user2 = new UserDTO("userma", false);
 
-        dentistDTO1 = new DentistDTO(1L, 123L, 456L, "Fernando", "Castro", user1);
-        dentistDTO2 = new DentistDTO(2L, 789L, 972L, "Maria", "Acosta", user2);
-    }
+            dentistDTO1 = new DentistDTO(1L, 123L, 456L, "Fernando", "Castro", user1);
+            dentistDTO2 = new DentistDTO(2L, 789L, 972L, "Maria", "Acosta", user2);
+        }
 
     @Test
     public void createDentistTest() throws Exception {
@@ -109,33 +102,33 @@ class DentistControllerTest {
                 .andExpect(status().isForbidden());
     }
 
-    @Test
-    public void getAllDentistsTest() throws Exception {
-        List<DentistDTO> list = new ArrayList<>();
-        list.add(dentistDTO1);
-        list.add(dentistDTO2);
+        @Test
+        public void getAllDentistsTest() throws Exception {
+                List<DentistDTO> list = new ArrayList<>();
+                list.add(dentistDTO1);
+                list.add(dentistDTO2);
 
-        when(dentistService.getAll()).thenReturn(list);
-        MvcResult response =  this.mockMvc.perform(get("/dentists/all")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(list.size())))
-                .andReturn();
+                when(dentistService.getAll()).thenReturn(list);
+                MvcResult response = this.mockMvc.perform(get("/dentists/all")
+                                .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.size()", is(list.size())))
+                        .andReturn();
 
-        assertNotNull(response.getResponse());
-    }
+                assertNotNull(response.getResponse());
+        }
 
-    @Test
-    public void forbbidenToGetAllDentistsTest() throws Exception {
-        List<DentistDTO> list = new ArrayList<>();
-        list.add(dentistDTO1);
-        list.add(dentistDTO2);
+        @Test
+        public void forbbidenToGetAllDentistsTest() throws Exception {
+                List<DentistDTO> list = new ArrayList<>();
+                list.add(dentistDTO1);
+                list.add(dentistDTO2);
 
-        when(dentistService.getAll()).thenReturn(list);
-        this.mockMvc.perform(get("/dentists/all")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("USER"))))
-                .andExpect(status().isForbidden());
-    }
+                when(dentistService.getAll()).thenReturn(list);
+                this.mockMvc.perform(get("/dentists/all")
+                            .with(jwt().authorities(new SimpleGrantedAuthority("USER"))))
+                        .andExpect(status().isForbidden());
+        }
 
     @Test
     public void notFoundToGetAllDentistsTest() throws Exception {
@@ -173,62 +166,67 @@ class DentistControllerTest {
                 response.getResponse().getContentAsString(StandardCharsets.UTF_8));
     }
 
-    @Test
-    public void updateDentistTest() throws Exception {
-        dentistDTO1.setLastname("Camila");
-        when(dentistService.update(any(DentistDTO.class))).thenReturn(dentistDTO1);
+        @Test
+        public void updateDentistTest() throws Exception {
+                dentistDTO1.setLastname("Camila");
+                when(dentistService.update(any(DentistDTO.class))).thenReturn(dentistDTO1);
 
-        String payloadDentist = objectMapper.writeValueAsString(dentistDTO1);
+                String payloadDentist = objectMapper.writeValueAsString(dentistDTO1);
 
-        MvcResult response = this.mockMvc.perform(put("/dentists/update")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payloadDentist))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json"))
-                .andReturn();
+                MvcResult response = this.mockMvc.perform(put("/dentists/update")
+                                .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payloadDentist))
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType("application/json"))
+                        .andReturn();
 
-        assertEquals(response.getResponse().getContentAsString(), payloadDentist);
-    }
+                assertEquals(response.getResponse().getContentAsString(), payloadDentist);
+        }
 
-    @Test
-    public void notFoundUpdateDentistTest() throws Exception {
-        dentistDTO2.setLastname("David");
-        when(dentistService.update(any(DentistDTO.class))).thenThrow(new NoSuchDataExistsException("The dentist trying to update was not found!"));
+        @Test
+        public void notFoundUpdateDentistTest() throws Exception {
+                dentistDTO2.setLastname("David");
+                when(dentistService.update(any(DentistDTO.class)))
+                                .thenThrow(new NoSuchDataExistsException(
+                                                "The dentist trying to update was not found!"));
 
-        String payloadDentist = objectMapper.writeValueAsString(dentistDTO2);
+                String payloadDentist = objectMapper.writeValueAsString(dentistDTO2);
 
-        MvcResult response = this.mockMvc.perform(put("/dentists/update")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payloadDentist))
-                .andExpect(status().isNotFound())
-                .andReturn();
+                MvcResult response = this.mockMvc.perform(put("/dentists/update")
+                                .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payloadDentist))
+                        .andExpect(status().isNotFound())
+                        .andReturn();
 
-        assertEquals("ERROR: The dentist trying to update was not found!", response.getResponse().getContentAsString(StandardCharsets.UTF_8));
-    }
+                assertEquals("ERROR: The dentist trying to update was not found!",
+                                response.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        }
 
-    @Test
-    public void deleteDentistById() throws Exception {
-        doNothing().when(dentistService).delete(anyLong());
+        @Test
+        public void deleteDentistById() throws Exception {
+                doNothing().when(dentistService).delete(anyLong());
 
-        MvcResult response = this.mockMvc.perform(delete("/dentists/delete/{id}", 1L)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
-                .andExpect(status().isOk())
-                .andReturn();
+                MvcResult response = this.mockMvc.perform(delete("/dentists/delete/{id}", 1L)
+                                .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
+                        .andExpect(status().isOk())
+                        .andReturn();
 
-        assertEquals(response.getResponse().getContentAsString(), "Dentist with id: 1 deleted");
-    }
+                assertEquals(response.getResponse().getContentAsString(), "Dentist with id: 1 deleted");
+        }
 
-    @Test
-    public void notFoundDeleteDentistById() throws Exception {
-        doThrow(new NoSuchDataExistsException("The dentist with id: 15 was not found!")).when(dentistService).delete(15L);
+        @Test
+        public void notFoundDeleteDentistById() throws Exception {
+                doThrow(new NoSuchDataExistsException("The dentist with id: 15 was not found!")).when(dentistService)
+                                .delete(15L);
 
-        MvcResult response = this.mockMvc.perform(delete("/dentists/delete/{id}", 15L)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
-                .andExpect(status().isNotFound())
-                .andReturn();
+                MvcResult response = this.mockMvc.perform(delete("/dentists/delete/{id}", 15L)
+                                .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
+                        .andExpect(status().isNotFound())
+                        .andReturn();
 
-        assertEquals("ERROR: The dentist with id: 15 was not found!", response.getResponse().getContentAsString(StandardCharsets.UTF_8));
-    }
+                assertEquals("ERROR: The dentist with id: 15 was not found!",
+                                response.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        }
 }

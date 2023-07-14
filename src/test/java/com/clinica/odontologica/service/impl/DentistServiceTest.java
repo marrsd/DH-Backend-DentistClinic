@@ -1,14 +1,14 @@
 package com.clinica.odontologica.service.impl;
 
-import com.clinica.odontologica.domain.Dentist;
-import com.clinica.odontologica.domain.auth.ERole;
-import com.clinica.odontologica.domain.auth.User;
-import com.clinica.odontologica.dto.DentistDTO;
-import com.clinica.odontologica.dto.UserDTO;
+import com.clinica.odontologica.model.domain.Dentist;
+import com.clinica.odontologica.model.domain.auth.ERole;
+import com.clinica.odontologica.model.domain.auth.User;
 import com.clinica.odontologica.exception.DataAlreadyExistsException;
 import com.clinica.odontologica.exception.IntegrityDataException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.exception.ResourceNotFoundException;
+import com.clinica.odontologica.model.dto.DentistDTO;
+import com.clinica.odontologica.model.dto.UserDTO;
 import com.clinica.odontologica.repository.DentistRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
@@ -198,11 +198,11 @@ class DentistServiceTest {
     @Test
     @Order(14)
     public void notFoundDeleteDentistTest() {
-       dentistDTO.setId(15L);
+        dentistDTO.setId(15L);
 
-       when(dentistRepository.findById(anyLong())).thenReturn(Optional.empty());
+        when(dentistRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-       assertThrows(NoSuchDataExistsException.class, () -> dentistService.delete(dentistDTO.getId()));
+        assertThrows(NoSuchDataExistsException.class, () -> dentistService.delete(dentistDTO.getId()));
     }
 
     @Test

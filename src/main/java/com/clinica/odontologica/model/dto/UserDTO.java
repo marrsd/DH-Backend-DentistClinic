@@ -1,4 +1,4 @@
-package com.clinica.odontologica.dto;
+package com.clinica.odontologica.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

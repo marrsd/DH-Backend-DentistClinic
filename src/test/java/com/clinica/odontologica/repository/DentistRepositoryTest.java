@@ -1,8 +1,8 @@
 package com.clinica.odontologica.repository;
 
-import com.clinica.odontologica.domain.Dentist;
-import com.clinica.odontologica.domain.auth.ERole;
-import com.clinica.odontologica.domain.auth.User;
+import com.clinica.odontologica.model.domain.Dentist;
+import com.clinica.odontologica.model.domain.auth.ERole;
+import com.clinica.odontologica.model.domain.auth.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,7 +57,7 @@ class DentistRepositoryTest {
         dentistRepository.save(dentist);
         List<Dentist> dentistList = dentistRepository.findAll();
 
-       assertEquals(dentistList.size(), 1);
+        assertEquals(dentistList.size(), 1);
     }
 
     @Test
@@ -72,7 +71,7 @@ class DentistRepositoryTest {
 
     @Test
     public void getDentistByRegistrationNumberTest() {
-        Dentist dentist1 =  dentistRepository.save(dentist);
+        Dentist dentist1 = dentistRepository.save(dentist);
 
         Optional<Dentist> dentist2 = dentistRepository.getByRegistrationNumber(dentist1.getRegistrationNumber());
 
@@ -81,9 +80,10 @@ class DentistRepositoryTest {
 
     @Test
     public void getDentistByFullnameTest() {
-        Dentist dentist1 =  dentistRepository.save(dentist);
+        Dentist dentist1 = dentistRepository.save(dentist);
 
-        Dentist dentist2 = dentistRepository.getByFirstnameAndLastname(dentist1.getFirstname(), dentist1.getLastname()).get();
+        Dentist dentist2 = dentistRepository.getByFirstnameAndLastname(dentist1.getFirstname(), dentist1.getLastname())
+                .get();
 
         assertEquals(dentist1.getLastname(), dentist2.getLastname());
     }

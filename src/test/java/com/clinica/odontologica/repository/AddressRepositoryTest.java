@@ -1,6 +1,6 @@
 package com.clinica.odontologica.repository;
 
-import com.clinica.odontologica.domain.Address;
+import com.clinica.odontologica.model.domain.Address;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ class AddressRepositoryTest {
 
     @Test
     public void getAllAddressesTest() {
-       addressRepository.save(address);
+        addressRepository.save(address);
         List<Address> addressList = addressRepository.findAll();
 
         assertEquals(addressList.size(), 1);

@@ -1,7 +1,7 @@
 package com.clinica.odontologica.repository;
 
-import com.clinica.odontologica.domain.auth.ERole;
-import com.clinica.odontologica.domain.auth.User;
+import com.clinica.odontologica.model.domain.auth.ERole;
+import com.clinica.odontologica.model.domain.auth.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

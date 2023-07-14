@@ -1,7 +1,7 @@
 package com.clinica.odontologica.security.filter;
 
 import com.auth0.jwt.JWT;
-import com.clinica.odontologica.domain.auth.User;
+import com.clinica.odontologica.model.domain.auth.User;
 import com.clinica.odontologica.security.SecurityConstants;
 import com.clinica.odontologica.security.manager.CustomAuthenticationManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,25 +27,29 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private CustomAuthenticationManager authenticationManager;
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
         try {
             User user = new ObjectMapper().readValue(request.getInputStream(), User.class);
-            Authentication authentication = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
+            Authentication authentication = new UsernamePasswordAuthenticationToken(user.getUsername(),
+                    user.getPassword());
             return authenticationManager.authenticate(authentication);
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException();
         }
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException failed) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().write(failed.getMessage());
         response.getWriter().flush();
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+            Authentication authResult) throws IOException, ServletException {
         String token = JWT.create()
                 .withSubject(authResult.getName())
                 .withClaim("roles", authResult.getAuthorities()

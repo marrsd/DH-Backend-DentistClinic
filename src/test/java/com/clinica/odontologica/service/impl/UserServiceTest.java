@@ -1,7 +1,7 @@
 package com.clinica.odontologica.service.impl;
 
-import com.clinica.odontologica.domain.auth.ERole;
-import com.clinica.odontologica.domain.auth.User;
+import com.clinica.odontologica.model.domain.auth.ERole;
+import com.clinica.odontologica.model.domain.auth.User;
 import com.clinica.odontologica.exception.DataAlreadyExistsException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.payload.UserRequest;
@@ -89,7 +89,7 @@ public class UserServiceTest {
     @Test
     @Order(5)
     public void getUserByIdTest() throws Exception {
-       Long id = 1L;
+        Long id = 1L;
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
 

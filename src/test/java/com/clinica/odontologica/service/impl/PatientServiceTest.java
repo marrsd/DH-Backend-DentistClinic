@@ -1,15 +1,15 @@
 package com.clinica.odontologica.service.impl;
 
-import com.clinica.odontologica.domain.Patient;
-import com.clinica.odontologica.domain.auth.ERole;
-import com.clinica.odontologica.domain.auth.User;
-import com.clinica.odontologica.dto.AddressDTO;
-import com.clinica.odontologica.dto.PatientDTO;
-import com.clinica.odontologica.dto.UserDTO;
+import com.clinica.odontologica.model.domain.Patient;
+import com.clinica.odontologica.model.domain.auth.ERole;
+import com.clinica.odontologica.model.domain.auth.User;
 import com.clinica.odontologica.exception.DataAlreadyExistsException;
 import com.clinica.odontologica.exception.IntegrityDataException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.exception.ResourceNotFoundException;
+import com.clinica.odontologica.model.dto.AddressDTO;
+import com.clinica.odontologica.model.dto.PatientDTO;
+import com.clinica.odontologica.model.dto.UserDTO;
 import com.clinica.odontologica.repository.PatientRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;

@@ -1,4 +1,4 @@
-package com.clinica.odontologica.dto;
+package com.clinica.odontologica.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,11 +9,12 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class DentistDTO {
+public class PatientDTO {
     private Long id;
     private Long dni;
-    private Long registrationNumber;
     private String firstname;
     private String lastname;
+    private AddressDTO address;
     private UserDTO user;
+
 }

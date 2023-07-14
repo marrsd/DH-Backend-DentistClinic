@@ -1,13 +1,13 @@
 package com.clinica.odontologica.controller.impl;
 
-
-import com.clinica.odontologica.securityHelper.SecurityConfigForTest;
-import com.clinica.odontologica.dto.AddressDTO;
-import com.clinica.odontologica.dto.PatientDTO;
-import com.clinica.odontologica.dto.UserDTO;
+import com.clinica.odontologica.security.SecurityConfig;
+import com.clinica.odontologica.security.manager.CustomAuthenticationManager;
 import com.clinica.odontologica.exception.DataAlreadyExistsException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.exception.ResourceNotFoundException;
+import com.clinica.odontologica.model.dto.AddressDTO;
+import com.clinica.odontologica.model.dto.PatientDTO;
+import com.clinica.odontologica.model.dto.UserDTO;
 import com.clinica.odontologica.service.impl.PatientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,12 +18,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -38,12 +34,9 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Import(SecurityConfigForTest.class)
+@Import(SecurityConfig.class)
 @WebMvcTest(PatientController.class)
 class PatientControllerTest {
-
-    @Autowired
-    private WebApplicationContext context;
 
     @Autowired
     private MockMvc mockMvc;
@@ -55,7 +48,7 @@ class PatientControllerTest {
     ObjectMapper objectMapper;
 
     @MockBean
-    JwtDecoder jwtDecoder;
+    CustomAuthenticationManager customAuthenticationManager;
 
     private PatientDTO patientDTO1;
     private PatientDTO patientDTO2;
@@ -66,7 +59,6 @@ class PatientControllerTest {
 
     @BeforeEach
     public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(SecurityMockMvcConfigurers.springSecurity()).build();
 
         user1 = new UserDTO("userfc", true);
         user2 = new UserDTO("userma", false);
@@ -123,7 +115,7 @@ class PatientControllerTest {
         when(patientService.getAll()).thenReturn(list);
 
         MvcResult response = this.mockMvc.perform(get("/patients/all")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN")))                )
+                .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()", is(list.size())))
                 .andReturn();
@@ -140,7 +132,7 @@ class PatientControllerTest {
         when(patientService.getAll()).thenReturn(list);
 
         this.mockMvc.perform(get("/patients/all")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("USER")))                )
+                .with(jwt().authorities(new SimpleGrantedAuthority("USER"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -178,7 +170,6 @@ class PatientControllerTest {
         assertEquals("ERROR: Patient id can´t be negative", response.getResponse().getContentAsString(StandardCharsets.UTF_8));
     }
 
-
     @Test
     public void updatePatientTest() throws Exception {
         patientDTO1.setFirstname("Lucas");
@@ -188,8 +179,8 @@ class PatientControllerTest {
 
         MvcResult response = this.mockMvc.perform(put("/patients/update")
                 .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payloadPatient))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payloadPatient))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andReturn();
@@ -200,18 +191,20 @@ class PatientControllerTest {
     @Test
     public void notFoundUpdatePatientTest() throws Exception {
         patientDTO2.setFirstname("Maria");
-        when(patientService.update(any(PatientDTO.class))).thenThrow(new NoSuchDataExistsException("The patient trying to update was not found"));
+        when(patientService.update(any(PatientDTO.class)))
+                .thenThrow(new NoSuchDataExistsException("The patient trying to update was not found"));
 
         String payloadPatient = objectMapper.writeValueAsString(patientDTO2);
 
         MvcResult response = this.mockMvc.perform(put("/patients/update")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payloadPatient))
+                .with(jwt().authorities(new SimpleGrantedAuthority("USER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payloadPatient))
                 .andExpect(status().isNotFound())
                 .andReturn();
 
-        assertEquals("ERROR: The patient trying to update was not found", response.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        assertEquals("ERROR: The patient trying to update was not found",
+                response.getResponse().getContentAsString(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -219,7 +212,7 @@ class PatientControllerTest {
         doNothing().when(patientService).delete(anyLong());
 
         MvcResult response = this.mockMvc.perform(delete("/patients/delete/{id}", 1L)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
+                .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -228,13 +221,15 @@ class PatientControllerTest {
 
     @Test
     public void NotFoundDeletePatientById() throws Exception {
-        doThrow(new NoSuchDataExistsException("The patient with id: 20 was not found")).when(patientService).delete(20L);
+        doThrow(new NoSuchDataExistsException("The patient with id: 20 was not found")).when(patientService)
+                .delete(20L);
 
         MvcResult response = this.mockMvc.perform(delete("/patients/delete/{id}", 20L)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
+                .with(jwt().authorities(new SimpleGrantedAuthority("ADMIN"))))
                 .andExpect(status().isNotFound())
                 .andReturn();
 
-        assertEquals("ERROR: The patient with id: 20 was not found", response.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        assertEquals("ERROR: The patient with id: 20 was not found",
+                response.getResponse().getContentAsString(StandardCharsets.UTF_8));
     }
 }

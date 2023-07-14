@@ -1,10 +1,10 @@
 package com.clinica.odontologica.service.impl;
 
-import com.clinica.odontologica.domain.Address;
-import com.clinica.odontologica.dto.AddressDTO;
+import com.clinica.odontologica.model.domain.Address;
 import com.clinica.odontologica.exception.IntegrityDataException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.exception.ResourceNotFoundException;
+import com.clinica.odontologica.model.dto.AddressDTO;
 import com.clinica.odontologica.repository.AddressRepository;
 import com.clinica.odontologica.service.CRUDService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +33,7 @@ public class AddressService implements CRUDService<AddressDTO> {
 
     @Override
     public AddressDTO create(AddressDTO addressDTO) throws IntegrityDataException {
-        if(addressDTO.getNumber() < 1 )
+        if (addressDTO.getNumber() < 1)
             throw new IntegrityDataException("The address number must not be negative or 0");
 
         Address address = mapper.convertValue(addressDTO, Address.class);
@@ -48,7 +48,7 @@ public class AddressService implements CRUDService<AddressDTO> {
     public List<AddressDTO> getAll() throws ResourceNotFoundException {
         List<Address> addresses = addressRepository.findAll();
 
-        if(addresses.isEmpty())
+        if (addresses.isEmpty())
             throw new ResourceNotFoundException("There aren't registered addresses");
 
         List<AddressDTO> addressDTOList = new ArrayList<>();
@@ -63,10 +63,10 @@ public class AddressService implements CRUDService<AddressDTO> {
 
     @Override
     public AddressDTO getById(Long id) throws IntegrityDataException, NoSuchDataExistsException {
-        if(id == null)
+        if (id == null)
             throw new IntegrityDataException("Address id cant' be null");
 
-        if(id < 1)
+        if (id < 1)
             throw new IllegalArgumentException("Address id can´t be negative");
 
         Address address = addressRepository.findById(id)
@@ -74,12 +74,13 @@ public class AddressService implements CRUDService<AddressDTO> {
 
         AddressDTO addressDTO = mapper.convertValue(address, AddressDTO.class);
 
-        LOGGER.info("Method - GetById: Address with id: "+ id + ": " + addressDTO);
+        LOGGER.info("Method - GetById: Address with id: " + id + ": " + addressDTO);
         return addressDTO;
     }
 
-    public AddressDTO getByStreetNumber(String street, Integer number) throws IntegrityDataException, NoSuchDataExistsException {
-        if(street == null && number == null)
+    public AddressDTO getByStreetNumber(String street, Integer number)
+            throws IntegrityDataException, NoSuchDataExistsException {
+        if (street == null && number == null)
             throw new IntegrityDataException("The street and the number can't be null");
 
         Address address = addressRepository.getByStreetAndNumber(street, number)
@@ -87,16 +88,17 @@ public class AddressService implements CRUDService<AddressDTO> {
 
         AddressDTO addressDTO = mapper.convertValue(address, AddressDTO.class);
 
-        LOGGER.info("Method - GetByStreetAndNumber: Address with street" + street + " and numbber: "+ number +" " + address);
+        LOGGER.info("Method - GetByStreetAndNumber: Address with street" + street + " and numbber: " + number + " "
+                + address);
         return addressDTO;
     }
 
     @Override
     public AddressDTO update(AddressDTO addressDTO) throws IntegrityDataException, NoSuchDataExistsException {
-        if(addressDTO == null)
+        if (addressDTO == null)
             throw new IntegrityDataException("The address must not be null");
 
-        if(addressDTO.getNumber() < 1)
+        if (addressDTO.getNumber() < 1)
             throw new IllegalArgumentException("The address number must not be negative");
 
         Address addressDB = addressRepository.findById(mapper.convertValue(addressDTO, Address.class).getId())
@@ -106,22 +108,22 @@ public class AddressService implements CRUDService<AddressDTO> {
 
         AddressDTO addressUpdated = mapper.convertValue(addressRepository.save(addressDB), AddressDTO.class);
 
-        LOGGER.info("Method - Update: Successfully updated address: "+ addressUpdated);
+        LOGGER.info("Method - Update: Successfully updated address: " + addressUpdated);
         return addressUpdated;
     }
 
     @Override
     public void delete(Long id) throws IntegrityDataException, NoSuchDataExistsException {
-        if(id == null)
+        if (id == null)
             throw new IntegrityDataException("Address id cant' be null");
 
-        if(id < 1)
+        if (id < 1)
             throw new IllegalArgumentException("Address id can´t be negative");
 
         addressRepository.findById(id)
                 .orElseThrow(() -> new NoSuchDataExistsException("The address with id: " + id + " was not found"));
 
-        LOGGER.info("Method - Delete: Deleted address with id: "+ id);
+        LOGGER.info("Method - Delete: Deleted address with id: " + id);
         addressRepository.deleteById(id);
     }
 

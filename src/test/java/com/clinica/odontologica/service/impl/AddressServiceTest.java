@@ -1,19 +1,16 @@
 package com.clinica.odontologica.service.impl;
 
-import com.clinica.odontologica.domain.Address;
-import com.clinica.odontologica.dto.AddressDTO;
+import com.clinica.odontologica.model.domain.Address;
 import com.clinica.odontologica.exception.IntegrityDataException;
 import com.clinica.odontologica.exception.NoSuchDataExistsException;
 import com.clinica.odontologica.exception.ResourceNotFoundException;
+import com.clinica.odontologica.model.dto.AddressDTO;
 import com.clinica.odontologica.repository.AddressRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Sort;
 
 import java.util.Arrays;
 import java.util.List;

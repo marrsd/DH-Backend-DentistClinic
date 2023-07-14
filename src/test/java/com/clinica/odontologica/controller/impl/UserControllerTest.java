@@ -1,9 +1,9 @@
 package com.clinica.odontologica.controller.impl;
 
-
-import com.clinica.odontologica.securityHelper.SecurityConfigForUserTest;
-import com.clinica.odontologica.domain.auth.User;
+import com.clinica.odontologica.security.SecurityConfig;
+import com.clinica.odontologica.model.domain.auth.User;
 import com.clinica.odontologica.payload.UserRequest;
+import com.clinica.odontologica.security.manager.CustomAuthenticationManager;
 import com.clinica.odontologica.service.impl.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Import(SecurityConfigForUserTest.class)
+@Import(SecurityConfig.class)
 @WebMvcTest(UserController.class)
 class UserControllerTest {
 
@@ -33,6 +33,8 @@ class UserControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    @MockBean
+    CustomAuthenticationManager customAuthenticationManager;
 
     private UserRequest userRequest;
 
@@ -43,15 +45,15 @@ class UserControllerTest {
     }
 
     @Test
-    public void createUser() throws Exception{
+    public void createUser() throws Exception {
         User user = objectMapper.convertValue(userRequest, User.class);
         when(userService.createUser(any(UserRequest.class))).thenReturn(user);
 
         String payloadUser = objectMapper.writeValueAsString(userRequest);
 
         this.mockMvc.perform(post("/user/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payloadUser))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payloadUser))
                 .andExpect(status().isCreated())
                 .andReturn();
     }

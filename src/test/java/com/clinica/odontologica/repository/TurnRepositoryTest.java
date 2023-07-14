@@ -1,11 +1,11 @@
 package com.clinica.odontologica.repository;
 
-import com.clinica.odontologica.domain.Address;
-import com.clinica.odontologica.domain.Dentist;
-import com.clinica.odontologica.domain.Patient;
-import com.clinica.odontologica.domain.Turn;
-import com.clinica.odontologica.domain.auth.ERole;
-import com.clinica.odontologica.domain.auth.User;
+import com.clinica.odontologica.model.domain.Address;
+import com.clinica.odontologica.model.domain.Dentist;
+import com.clinica.odontologica.model.domain.Patient;
+import com.clinica.odontologica.model.domain.Turn;
+import com.clinica.odontologica.model.domain.auth.ERole;
+import com.clinica.odontologica.model.domain.auth.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,7 +95,8 @@ class TurnRepositoryTest {
     public void getAllTurnByDentistRegistrationNumberTest() {
         turnRepository.save(turn);
 
-        List<Turn> turnList = turnRepository.getByDentistRegistrationNumber(turn.getDentist().getRegistrationNumber()).get();
+        List<Turn> turnList = turnRepository.getByDentistRegistrationNumber(turn.getDentist().getRegistrationNumber())
+                .get();
 
         assertEquals(turnList.size(), 1);
     }
@@ -127,6 +128,5 @@ class TurnRepositoryTest {
 
         assertEquals(Optional.empty(), turn2);
     }
-
 
 }
