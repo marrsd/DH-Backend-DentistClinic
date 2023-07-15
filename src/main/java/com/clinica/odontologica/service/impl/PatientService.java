@@ -41,7 +41,10 @@ public class PatientService implements CRUDService<PatientDTO> {
     }
 
     @Override
-    public PatientDTO create(PatientDTO patientDTO) throws DataAlreadyExistsException, NoSuchDataExistsException {
+    public PatientDTO create(PatientDTO patientDTO)
+            throws DataAlreadyExistsException, NoSuchDataExistsException, IntegrityDataException {
+        if (patientDTO.getUser().getIsAdmin())
+            throw new IntegrityDataException("A patient cannot be an admin user");
 
         User userConverted = mapper.convertValue(patientDTO.getUser(), User.class);
 

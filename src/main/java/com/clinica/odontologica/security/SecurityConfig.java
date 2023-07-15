@@ -24,19 +24,29 @@ public class SecurityConfig {
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
                 pathsArr1 = new String[] {
-                                "/patients/new",
-                                "/patients/update",
-                                "/dentists/new",
-                                "/dentists/update",
                                 "/turns/new",
                                 "/turns/update",
-                                "/turns/delete"
+                                "/turns/delete/**"
                 };
 
                 pathsArr2 = new String[] {
                                 "/patients/**",
+                                "/patients/id/**",
+                                "/patients/dni/**",
+                                "/patients/delete/**",
                                 "/dentists/**",
-                                "/turns/**"
+                                "/dentists/id/**",
+                                "/dentists/registrationNumber/**",
+                                "/dentists/fullName/**",
+                                "/dentists/delete/**",
+
+                                "/turns/new",
+                                "/turns/all",
+                                "/turns/id/**",
+                                "/turns/dentistRegistrationNumber/**",
+                                "/turns/patientDni/**",
+                                "/turns/update",
+                                "/turns/delete/**"
                 };
 
                 AuthenticationFilter authenticationFilter = new AuthenticationFilter(customAuthenticationManager);
@@ -48,7 +58,7 @@ public class SecurityConfig {
                                 .antMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**")
                                 .permitAll()
                                 .antMatchers(HttpMethod.POST, "/user/singUp").permitAll()
-                                .antMatchers(pathsArr1).hasAnyAuthority("USER", "ADMIN")
+                                .antMatchers(pathsArr1).hasAnyAuthority("USER")
                                 .antMatchers(pathsArr2).hasAnyAuthority("ADMIN")
                                 .anyRequest().authenticated()
                                 .and()

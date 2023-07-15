@@ -61,6 +61,7 @@ public class TurnService implements CRUDService<TurnDTO> {
     @Override
     public TurnDTO create(TurnDTO turnDTO)
             throws IntegrityDataException, DataAlreadyExistsException, NoSuchDataExistsException {
+
         if (turnDTO.getDentist() == null)
             throw new IntegrityDataException("You can't define a dentist null to the turn");
 

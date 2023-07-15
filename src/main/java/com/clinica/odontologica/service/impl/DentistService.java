@@ -37,7 +37,11 @@ public class DentistService implements CRUDService<DentistDTO> {
     }
 
     @Override
-    public DentistDTO create(DentistDTO dentistDTO) throws DataAlreadyExistsException, NoSuchDataExistsException {
+    public DentistDTO create(DentistDTO dentistDTO)
+            throws DataAlreadyExistsException, NoSuchDataExistsException, IntegrityDataException {
+        if (dentistDTO.getUser().getIsAdmin())
+            throw new IntegrityDataException("A dentist cannot be an admin user");
+
         User userConverted = mapper.convertValue(dentistDTO.getUser(), User.class);
 
         if (dentistDTO.getDni() < 1 || dentistDTO.getRegistrationNumber() < 1)

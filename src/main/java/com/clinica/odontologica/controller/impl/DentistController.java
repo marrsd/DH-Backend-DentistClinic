@@ -44,7 +44,7 @@ public class DentistController implements CRUDController<DentistDTO> {
         @Operation(summary = "Create new dentist")
         @PostMapping("/new")
         public ResponseEntity<HttpStatus> register(@RequestBody DentistDTO dentist)
-                        throws DataAlreadyExistsException, NoSuchDataExistsException {
+                        throws DataAlreadyExistsException, NoSuchDataExistsException, IntegrityDataException {
                 dentistService.create(dentist);
                 return new ResponseEntity<>(HttpStatus.CREATED);
         }
