@@ -6,9 +6,9 @@ Consiste en un sistema que permite administrar la reserva de turnos de una clín
 
 ## Índice
 
-[Requerimientos](#requerimientos)
-[Documentación](#documentación)
-[Dentist Clinic - API](#dentist-clinic---api)
+* [Requerimientos](#requerimientos)
+* [Documentación](#documentación)
+* [Dentist Clinic - API](#dentist-clinic---api)
 
 ## Requerimientos
 
