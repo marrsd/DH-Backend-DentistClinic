@@ -49,7 +49,7 @@ public class Patient {
     private Set<Turn> turns = new HashSet<>();
 
     @NotNull(message = "User must not be blank or null")
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     @JoinColumn(name = "id_user", referencedColumnName = "user_id", nullable = false)
     private User user;
 }

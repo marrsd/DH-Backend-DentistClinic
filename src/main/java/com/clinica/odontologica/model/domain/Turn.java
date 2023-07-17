@@ -27,12 +27,12 @@ public class Turn {
     private Long id;
 
     @NotNull(message = "Patient must not be blank or null")
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_patient", referencedColumnName = "patient_id", nullable = false)
     private Patient patient;
 
     @NotNull(message = "Dentist must not be blank or null")
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_dentist", referencedColumnName = "dentist_id", nullable = false)
     private Dentist dentist;
 
